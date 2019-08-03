@@ -7,7 +7,8 @@ from fed_learn.weight_summarizer import WeightSummarizer
 
 
 class Server:
-    def __init__(self, model_fn: Callable, nb_clients: int, weight_summarizer: WeightSummarizer):
+    def __init__(self, model_fn: Callable, nb_clients: int, weight_summarizer: WeightSummarizer,
+                 only_debugging: bool = True):
         self.nb_clients = nb_clients
         self.weight_summarizer = weight_summarizer
 
@@ -17,6 +18,11 @@ class Server:
         fed_learn.get_rid_of_the_models(model)
 
         (x_train, y_train), (_, _) = datasets.cifar10.load_data()
+
+        if only_debugging:
+            x_train = x_train[:100]
+            y_train = y_train[:100]
+
         y_train = utils.to_categorical(y_train, len(np.unique(y_train)))
 
         self.x_train = x_train
@@ -26,6 +32,12 @@ class Server:
         self.clients = []
 
         self.client_model_weights = []
+
+        # Training parameters used by the clients
+        self.train_dict = {"batch_size": 32,
+                           "epochs": 5,
+                           "verbose": 1,
+                           "shuffle": True}
 
     def _generate_data_indices(self):
         self.client_data_indices = fed_learn.iid_data_indices(self.nb_clients, len(self.x_train))
@@ -60,10 +72,5 @@ class Server:
         new_weights = self.weight_summarizer.process(self.client_model_weights)
         self.model_weights = new_weights
 
-    @staticmethod
-    def get_client_train_param_dict():
-        train_dict = {"batch_size": 32,
-                      "epochs": 5,
-                      "verbose": 1,
-                      "shuffle": True}
-        return train_dict
+    def get_client_train_param_dict(self):
+        return self.train_dict
