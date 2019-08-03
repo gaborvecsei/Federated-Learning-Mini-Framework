@@ -39,6 +39,9 @@ class Server:
                            "verbose": 1,
                            "shuffle": True}
 
+        if only_debugging:
+            self.train_dict["epochs"] = 1
+
     def _generate_data_indices(self):
         self.client_data_indices = fed_learn.iid_data_indices(self.nb_clients, len(self.x_train))
 
