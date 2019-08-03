@@ -64,6 +64,10 @@ class Server:
         client.reset_model()
 
     def create_clients(self):
+        # Reset clients
+        self.clients = []
+
+        # Create new ones
         for i in range(self.nb_clients):
             client = fed_learn.Client(i)
             self.clients.append(client)
