@@ -42,6 +42,7 @@ for epoch in range(nb_epochs):
 
     server.summarize_weights()
     print("Loss (mean): {0}".format(np.mean(loss)))
+    loss.clear()
     print("-" * 30)
 
     # TODO: test the base model with the aggregated weights
