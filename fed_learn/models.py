@@ -1,16 +1,26 @@
 from keras import backend as K
-from keras import optimizers, losses, models
+from keras import optimizers, losses, models, layers
 from keras.applications.vgg16 import VGG16
 
 
-def create_model(input_shape: tuple,
-                 nb_classes: int,
-                 optimizer=optimizers.Adam(lr=0.001),
-                 loss=losses.categorical_crossentropy):
+def create_model(input_shape: tuple, nb_classes: int, init_with_imagenet: bool = False):
+    weights = None
+    if init_with_imagenet:
+        weights = "imagenet"
+
     model = VGG16(input_shape=input_shape,
                   classes=nb_classes,
-                  weights='imagenet',
+                  weights=weights,
                   include_top=False)
+    x = model.layers[-1].output
+    x = layers.Flatten()(x)
+    x = layers.Dense(nb_classes)(x)
+    x = layers.Softmax()(x)
+    model = models.Model(model.input, x)
+
+    loss = losses.categorical_crossentropy
+    optimizer = optimizers.Adam(lr=0.001)
+
     model.compile(optimizer, loss, metrics=["accuracy"])
     return model
 
