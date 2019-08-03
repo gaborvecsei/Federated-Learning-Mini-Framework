@@ -1,6 +1,6 @@
 from typing import Callable
-
-from keras import datasets
+import numpy as np
+from keras import datasets, utils
 
 import fed_learn
 from fed_learn.weight_summarizer import WeightSummarizer
@@ -17,6 +17,7 @@ class Server:
         fed_learn.get_rid_of_the_models(model)
 
         (x_train, y_train), (_, _) = datasets.cifar10.load_data()
+        y_train = utils.to_categorical(y_train, len(np.unique(y_train)))
 
         self.x_train = x_train
         self.y_train = y_train
