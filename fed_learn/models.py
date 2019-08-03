@@ -12,7 +12,6 @@ def create_model(input_shape: tuple,
                   weights='imagenet',
                   include_top=False)
     model.compile(optimizer, loss, metrics=["accuracy"])
-    model.load_weights()
     return model
 
 
