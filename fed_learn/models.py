@@ -12,8 +12,10 @@ def create_model(input_shape: tuple, nb_classes: int, init_with_imagenet: bool =
                   classes=nb_classes,
                   weights=weights,
                   include_top=False)
-    x = model.layers[-1].output
-    x = layers.Flatten()(x)
+    # "Shallow" VGG for Cifar10
+    x = model.get_layer('block3_pool').output
+    x = layers.Flatten(name='Flatten')(x)
+    x = layers.Dense(512, activation='relu')(x)
     x = layers.Dense(nb_classes)(x)
     x = layers.Softmax()(x)
     model = models.Model(model.input, x)
