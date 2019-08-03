@@ -3,10 +3,11 @@ from typing import Callable
 from keras import datasets
 
 import fed_learn
+from fed_learn.weight_summarizer import WeightSummarizer
 
 
 class Server:
-    def __init__(self, model_fn: Callable, nb_clients: int, weight_summarizer: fed_learn.WeightSummarizer):
+    def __init__(self, model_fn: Callable, nb_clients: int, weight_summarizer: WeightSummarizer):
         self.nb_clients = nb_clients
         self.weight_summarizer = weight_summarizer
 

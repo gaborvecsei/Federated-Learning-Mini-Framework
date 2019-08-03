@@ -16,5 +16,11 @@ class FedAvg(WeightSummarizer):
         super().__init__()
 
     def process(self, client_weight_list: List[List[np.ndarray]]) -> List[np.ndarray]:
-        # TODO: implement simple averaging
-        return client_weight_list[0]
+        weights_average = [np.zeros_like(w) for w in client_weight_list[0]]
+
+        for i in range(len(weights_average)):
+            w = weights_average[i]
+            for k in range(len(client_weight_list)):
+                w += client_weight_list[k][i]
+            w /= len(client_weight_list)
+        return weights_average
