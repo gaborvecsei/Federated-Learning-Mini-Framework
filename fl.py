@@ -7,6 +7,7 @@ import fed_learn
 args = fed_learn.get_args()
 
 nb_clients = args.clients
+client_fraction = args.fraction
 nb_global_epochs = args.global_epochs
 debug = args.debug
 
@@ -18,20 +19,22 @@ def model_fn():
 
 
 weight_summarizer = fed_learn.FedAvg()
-server = fed_learn.Server(model_fn, nb_clients, weight_summarizer, debug)
+server = fed_learn.Server(model_fn, weight_summarizer, nb_clients, client_fraction, debug)
 server.update_client_train_params(client_train_params)
+server.create_clients()
+server.send_train_data()
 
 for epoch in range(nb_global_epochs):
     print("Global Epoch {0} is starting".format(epoch))
     server.init_for_new_epoch()
-    server.create_clients()
+    selected_clients = server.select_clients()
 
-    for client in server.clients:
+    fed_learn.print_selected_clients(selected_clients)
+
+    for client in selected_clients:
         print("Client {0} is starting the training".format(client.id))
 
         server.send_model(client)
-        server.send_train_data(client)
-
         hist = client.edge_train(server.get_client_train_param_dict())
         server.epoch_losses.append(hist.history["loss"][-1])
 
@@ -44,9 +47,8 @@ for epoch in range(nb_global_epochs):
     print("Loss (client mean): {0}".format(server.global_train_losses[-1]))
 
     global_test_results = server.test_global_model()
-    print("Global test|")
+    print("--- Global test ---")
     for metric_name, value in global_test_results.items():
-        print("_" * 10)
         print("{0}: {1}".format(metric_name, value))
 
     with open("fed_learn_global_test_results.json", 'w') as f:

@@ -3,9 +3,11 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--global-epochs", help="Number of global (server) epochs", type=int, default=5,
+    parser.add_argument("-e", "--global-epochs", help="Number of global (server) epochs", type=int, default=10,
                         required=False)
-    parser.add_argument("-c", "--clients", help="Number of clients", type=int, default=10, required=False)
+    parser.add_argument("-c", "--clients", help="Number of clients", type=int, default=100, required=False)
+    parser.add_argument("-f", "--fraction", help="Client fraction to use", type=float, default=0.2,
+                        required=False)
     parser.add_argument("-d", "--debug", help="Debugging", action="store_true", required=False)
 
     parser.add_argument("-lr", "--learning-rate", help="Learning rate", type=float, default=0.01, required=False)
