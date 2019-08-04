@@ -49,7 +49,7 @@ for epoch in range(nb_global_epochs):
         print("_" * 10)
         print("{0}: {1}".format(metric_name, value))
 
-    print("_" * 30)
+    with open("fed_learn_global_test_results.json", 'w') as f:
+        json.dump(server.global_test_metrics_dict, f)
 
-with open("fed_learn_global_test_results.json", 'w') as f:
-    json.dump(server.global_test_metrics_dict, f)
+    print("_" * 30)
