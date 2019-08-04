@@ -18,32 +18,42 @@ class Server:
         # Initialize the global model's weights
         self.model_fn = model_fn
         model = self.model_fn()
+        self.global_test_metrics_dict = {k: [] for k in model.metrics_names}
         self.global_model_weights = model.get_weights()
         fed_learn.get_rid_of_the_models(model)
 
-        self.global_losses = []
+        self.global_train_losses = []
         self.epoch_losses = []
 
-        (x_train, y_train), _ = datasets.cifar10.load_data()
+        (x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
 
         if only_debugging:
             # TODO: remove me
             x_train = x_train[:100]
             y_train = y_train[:100]
+            x_test = x_test[:100]
+            y_test = y_test[:100]
 
         # TODO: separate preprocessor for the data transformations
         y_train = utils.to_categorical(y_train, len(np.unique(y_train)))
         x_train = x_train.astype(np.float32)
         x_train /= 255.0
 
+        y_test = utils.to_categorical(y_test, len(np.unique(y_test)))
+        x_test = x_test.astype(np.float32)
+        x_test /= 255.0
+
         self.x_train = x_train
         self.y_train = y_train
+        self.x_test = x_test
+        self.y_test = y_test
 
         self.client_data_indices = None
         self.clients = []
         self.client_model_weights = []
 
         # Training parameters used by the clients
+        # TODO: this should be configurable
         self.train_dict = {"batch_size": 32,
                            "epochs": 5,
                            "verbose": 1,
@@ -96,3 +106,16 @@ class Server:
 
     def get_client_train_param_dict(self):
         return self.train_dict
+
+    def test_global_model(self):
+        model = self.model_fn()
+        fed_learn.models.set_model_weights(model, self.global_model_weights)
+        results = model.evaluate(self.x_test, self.y_test, batch_size=32, verbose=1)
+
+        results_dict = dict(zip(model.metrics_names, results))
+        for metric_name, value in results_dict.items():
+            self.global_test_metrics_dict[metric_name].append(value)
+
+        fed_learn.get_rid_of_the_models(model)
+
+        return results_dict

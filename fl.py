@@ -1,4 +1,5 @@
 import argparse
+import json
 
 import numpy as np
 
@@ -42,9 +43,16 @@ for epoch in range(nb_epochs):
     server.summarize_weights()
 
     epoch_mean_loss = np.mean(server.epoch_losses)
-    server.global_losses.append(epoch_mean_loss)
-    print("Loss (mean): {0}".format(server.global_losses[-1]))
+    server.global_train_losses.append(epoch_mean_loss)
+    print("Loss (client mean): {0}".format(server.global_train_losses[-1]))
 
-    print("-" * 30)
+    global_test_results = server.test_global_model()
+    for metric_name, value in global_test_results.items():
+        print("Global test|")
+        print("_" * 10)
+        print("{0}: {1}".format(metric_name, value))
 
-    # TODO: test the base model with the aggregated weights
+    print("_" * 30)
+
+with open("fed_learn_global_test_results.json", 'w') as f:
+    json.dump(server.global_test_metrics_dict, f)
