@@ -1,7 +1,8 @@
 import argparse
 
-import fed_learn
 import numpy as np
+
+import fed_learn
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-ge", "--global-epochs", help="Number of global (server) epochs", type=int, default=5,
@@ -36,7 +37,7 @@ for epoch in range(nb_epochs):
         server.send_train_data(client)
 
         hist = client.edge_train(server.get_client_train_param_dict())
-        loss.append(hist.history["loss"])
+        loss.append(hist.history["loss"][-1])
 
         server.receive_results(client)
 
