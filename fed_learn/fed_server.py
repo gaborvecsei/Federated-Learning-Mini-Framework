@@ -17,7 +17,7 @@ class Server:
 
         self.model_fn = model_fn
         model = self.model_fn()
-        self.model_weights = model.get_weights()
+        self.global_model_weights = model.get_weights()
         fed_learn.get_rid_of_the_models(model)
 
         (x_train, y_train), _ = datasets.cifar10.load_data()
@@ -64,7 +64,7 @@ class Server:
         return x, y
 
     def send_model(self, client):
-        client.receive_and_init_model(self.model_fn, self.model_weights)
+        client.receive_and_init_model(self.model_fn, self.global_model_weights)
 
     def init_for_new_epoch(self):
         self._generate_data_indices()
@@ -85,7 +85,7 @@ class Server:
 
     def summarize_weights(self):
         new_weights = self.weight_summarizer.process(self.client_model_weights)
-        self.model_weights = new_weights
+        self.global_model_weights = new_weights
 
     def get_client_train_param_dict(self):
         return self.train_dict
