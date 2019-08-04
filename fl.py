@@ -28,8 +28,6 @@ for epoch in range(nb_epochs):
     server.create_clients()
     server.init_for_new_epoch()
 
-    loss = []
-
     for client in server.clients:
         print("Client {0} is starting the training".format(client.id))
 
@@ -37,13 +35,16 @@ for epoch in range(nb_epochs):
         server.send_train_data(client)
 
         hist = client.edge_train(server.get_client_train_param_dict())
-        loss.append(hist.history["loss"][-1])
+        server.epoch_losses.append(hist.history["loss"][-1])
 
         server.receive_results(client)
 
     server.summarize_weights()
-    print("Loss (mean): {0}".format(np.mean(loss)))
-    loss.clear()
+
+    epoch_mean_loss = np.mean(server.epoch_losses)
+    server.global_losses.append(epoch_mean_loss)
+    print("Loss (mean): {0}".format(server.global_losses[-1]))
+    
     print("-" * 30)
 
     # TODO: test the base model with the aggregated weights

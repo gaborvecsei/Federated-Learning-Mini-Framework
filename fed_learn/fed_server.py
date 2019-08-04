@@ -15,10 +15,14 @@ class Server:
         self.nb_clients = nb_clients
         self.weight_summarizer = weight_summarizer
 
+        # Initialize the global model's weights
         self.model_fn = model_fn
         model = self.model_fn()
         self.global_model_weights = model.get_weights()
         fed_learn.get_rid_of_the_models(model)
+
+        self.global_losses = []
+        self.epoch_losses = []
 
         (x_train, y_train), _ = datasets.cifar10.load_data()
 
@@ -37,7 +41,6 @@ class Server:
 
         self.client_data_indices = None
         self.clients = []
-
         self.client_model_weights = []
 
         # Training parameters used by the clients
@@ -68,9 +71,11 @@ class Server:
 
     def init_for_new_epoch(self):
         # Reset clients
-        self.clients = []
+        self.clients.clear()
         # Reset the collected weights
-        self.client_model_weights = []
+        self.client_model_weights.clear()
+        # Reset epoch losses
+        self.epoch_losses.clear()
         # Generate new data indices for the clients
         self._generate_data_indices()
 
