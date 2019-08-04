@@ -3,7 +3,7 @@ from keras import optimizers, losses, models, layers
 from keras.applications.vgg16 import VGG16
 
 
-def create_model(input_shape: tuple, nb_classes: int, init_with_imagenet: bool = False):
+def create_model(input_shape: tuple, nb_classes: int, init_with_imagenet: bool = False, learning_rate: float = 0.01):
     weights = None
     if init_with_imagenet:
         weights = "imagenet"
@@ -21,7 +21,7 @@ def create_model(input_shape: tuple, nb_classes: int, init_with_imagenet: bool =
     model = models.Model(model.input, x)
 
     loss = losses.categorical_crossentropy
-    optimizer = optimizers.Adam(lr=0.001)
+    optimizer = optimizers.SGD(lr=learning_rate, decay=0.99)
 
     model.compile(optimizer, loss, metrics=["accuracy"])
     return model

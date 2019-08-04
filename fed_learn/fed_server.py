@@ -53,15 +53,10 @@ class Server:
         self.client_model_weights = []
 
         # Training parameters used by the clients
-        # TODO: this should be configurable
-        self.train_dict = {"batch_size": 32,
-                           "epochs": 5,
-                           "verbose": 1,
-                           "shuffle": True}
-
-        if only_debugging:
-            # TODO: remove me
-            self.train_dict["epochs"] = 1
+        self.client_train_params_dict = {"batch_size": 32,
+                                         "epochs": 5,
+                                         "verbose": 1,
+                                         "shuffle": True}
 
     def _generate_data_indices(self):
         self.client_data_indices = fed_learn.iid_data_indices(self.nb_clients, len(self.x_train))
@@ -105,7 +100,10 @@ class Server:
         self.global_model_weights = new_weights
 
     def get_client_train_param_dict(self):
-        return self.train_dict
+        return self.client_train_params_dict
+
+    def update_client_train_params(self, param_dict: dict):
+        self.client_train_params_dict.update(param_dict)
 
     def test_global_model(self):
         model = self.model_fn()

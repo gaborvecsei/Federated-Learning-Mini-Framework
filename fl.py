@@ -1,30 +1,27 @@
-import argparse
 import json
 
 import numpy as np
 
 import fed_learn
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--global-epochs", help="Number of global (server) epochs", type=int, default=5,
-                    required=False)
-parser.add_argument("-c", "--clients", help="Number of clients", type=int, default=10, required=False)
-parser.add_argument("-d", "--debug", help="Debugging", action="store_true", required=False)
-args = parser.parse_args()
+args = fed_learn.get_args()
 
 nb_clients = args.clients
-nb_epochs = args.global_epochs
+nb_global_epochs = args.global_epochs
 debug = args.debug
+
+client_train_params = {"epochs": args.client_epochs, "batch_size": args.batch_size}
 
 
 def model_fn():
-    return fed_learn.create_model((32, 32, 3), 10, init_with_imagenet=False)
+    return fed_learn.create_model((32, 32, 3), 10, init_with_imagenet=False, learning_rate=args.learning_rate)
 
 
 weight_summarizer = fed_learn.FedAvg()
 server = fed_learn.Server(model_fn, nb_clients, weight_summarizer, debug)
+server.update_client_train_params(client_train_params)
 
-for epoch in range(nb_epochs):
+for epoch in range(nb_global_epochs):
     print("Global Epoch {0} is starting".format(epoch))
     server.init_for_new_epoch()
     server.create_clients()
