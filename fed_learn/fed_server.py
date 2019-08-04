@@ -67,6 +67,11 @@ class Server:
         client.receive_and_init_model(self.model_fn, self.global_model_weights)
 
     def init_for_new_epoch(self):
+        # Reset clients
+        self.clients = []
+        # Reset the collected weights
+        self.client_model_weights = []
+        # Generate new data indices for the clients
         self._generate_data_indices()
 
     def receive_results(self, client):
@@ -75,9 +80,6 @@ class Server:
         client.reset_model()
 
     def create_clients(self):
-        # Reset clients
-        self.clients = []
-
         # Create new ones
         for i in range(self.nb_clients):
             client = fed_learn.Client(i)
