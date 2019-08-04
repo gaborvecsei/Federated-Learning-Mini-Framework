@@ -25,8 +25,8 @@ server = fed_learn.Server(model_fn, nb_clients, weight_summarizer, debug)
 
 for epoch in range(nb_epochs):
     print("Global Epoch {0} is starting".format(epoch))
-    server.create_clients()
     server.init_for_new_epoch()
+    server.create_clients()
 
     for client in server.clients:
         print("Client {0} is starting the training".format(client.id))
@@ -44,7 +44,7 @@ for epoch in range(nb_epochs):
     epoch_mean_loss = np.mean(server.epoch_losses)
     server.global_losses.append(epoch_mean_loss)
     print("Loss (mean): {0}".format(server.global_losses[-1]))
-    
+
     print("-" * 30)
 
     # TODO: test the base model with the aggregated weights
