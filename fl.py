@@ -16,7 +16,7 @@ debug = args.debug
 
 
 def model_fn():
-    return fed_learn.create_model((32, 32, 3), 10)
+    return fed_learn.create_model((32, 32, 3), 10, init_with_imagenet=False)
 
 
 weight_summarizer = fed_learn.FedAvg()
