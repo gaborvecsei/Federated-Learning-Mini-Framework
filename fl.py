@@ -47,8 +47,8 @@ for epoch in range(nb_epochs):
     print("Loss (client mean): {0}".format(server.global_train_losses[-1]))
 
     global_test_results = server.test_global_model()
+    print("Global test|")
     for metric_name, value in global_test_results.items():
-        print("Global test|")
         print("_" * 10)
         print("{0}: {1}".format(metric_name, value))
 
