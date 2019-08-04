@@ -1,4 +1,5 @@
 from typing import Callable
+
 import numpy as np
 from keras import datasets, utils
 
@@ -7,7 +8,9 @@ from fed_learn.weight_summarizer import WeightSummarizer
 
 
 class Server:
-    def __init__(self, model_fn: Callable, nb_clients: int, weight_summarizer: WeightSummarizer,
+    def __init__(self, model_fn: Callable,
+                 nb_clients: int,
+                 weight_summarizer: WeightSummarizer,
                  only_debugging: bool = True):
         self.nb_clients = nb_clients
         self.weight_summarizer = weight_summarizer
@@ -17,13 +20,17 @@ class Server:
         self.model_weights = model.get_weights()
         fed_learn.get_rid_of_the_models(model)
 
-        (x_train, y_train), (_, _) = datasets.cifar10.load_data()
+        (x_train, y_train), _ = datasets.cifar10.load_data()
 
         if only_debugging:
+            # TODO: remove me
             x_train = x_train[:100]
             y_train = y_train[:100]
 
+        # TODO: separate preprocessor for the data transformations
         y_train = utils.to_categorical(y_train, len(np.unique(y_train)))
+        x_train = x_train.astype(np.float32)
+        x_train /= 255.0
 
         self.x_train = x_train
         self.y_train = y_train
@@ -40,6 +47,7 @@ class Server:
                            "shuffle": True}
 
         if only_debugging:
+            # TODO: remove me
             self.train_dict["epochs"] = 1
 
     def _generate_data_indices(self):
