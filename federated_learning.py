@@ -64,6 +64,7 @@ for epoch in range(args.global_epochs):
     with open(str(train_hist_path), 'w') as f:
         json.dump(server.global_test_metrics_dict, f)
 
+    # TODO: save only when a condition is fulfilled (validation loss gets better, etc...)
     server.save_model_weights(global_weight_path)
 
     print("_" * 30)
