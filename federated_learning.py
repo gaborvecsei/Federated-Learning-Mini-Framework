@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -6,6 +7,9 @@ import numpy as np
 import fed_learn
 
 args = fed_learn.get_args()
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 EXPERIMENT_FOLDER_PATH = Path(__file__).resolve().parent / "experiments" / args.name
 EXPERIMENT_FOLDER_PATH.mkdir(parents=True, exist_ok=args.overwrite_experiment)

@@ -19,6 +19,7 @@ def get_args():
     parser.add_argument("-b", "--batch-size", help="Batch Size", type=int, default=32, required=False)
     parser.add_argument("-ce", "--client-epochs", help="Number of epochs for the clients", type=int, default=1,
                         required=False)
+    parser.add_argument("-g", "--gpu", help="GPU to use (-1 is CPU)", type=int, default=0, required=False)
     args = parser.parse_args()
     return args
 
