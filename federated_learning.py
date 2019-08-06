@@ -14,6 +14,7 @@ args_json_path = EXPERIMENT_FOLDER_PATH / "args.json"
 fed_learn.save_args_as_json(args, EXPERIMENT_FOLDER_PATH / args_json_path)
 
 train_hist_path = EXPERIMENT_FOLDER_PATH / "fed_learn_global_test_results.json"
+global_weight_path = EXPERIMENT_FOLDER_PATH / "global_weights.h5"
 
 client_train_params = {"epochs": args.client_epochs, "batch_size": args.batch_size}
 
@@ -57,5 +58,7 @@ for epoch in range(args.global_epochs):
 
     with open(str(train_hist_path), 'w') as f:
         json.dump(server.global_test_metrics_dict, f)
+
+    server.save_model_weights(global_weight_path)
 
     print("_" * 30)

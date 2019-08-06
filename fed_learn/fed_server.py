@@ -1,7 +1,7 @@
 from typing import Callable
 
 import numpy as np
-from keras import datasets, utils
+from keras import datasets, utils, models
 
 import fed_learn
 from fed_learn.weight_summarizer import WeightSummarizer
@@ -73,6 +73,11 @@ class Server:
         client.receive_data(x, y)
         return x, y
 
+    def _create_model_with_updated_weights(self) -> models.Model:
+        model = self.model_fn()
+        fed_learn.models.set_model_weights(model, self.global_model_weights)
+        return model
+
     def send_train_data(self):
         self._generate_data_indices()
         for c in self.clients:
@@ -109,8 +114,7 @@ class Server:
         self.client_train_params_dict.update(param_dict)
 
     def test_global_model(self):
-        model = self.model_fn()
-        fed_learn.models.set_model_weights(model, self.global_model_weights)
+        model = self._create_model_with_updated_weights()
         results = model.evaluate(self.x_test, self.y_test, batch_size=32, verbose=1)
 
         results_dict = dict(zip(model.metrics_names, results))
@@ -127,3 +131,14 @@ class Server:
         np.random.shuffle(client_indices)
         selected_client_indices = client_indices[:nb_clients_to_use]
         return np.asarray(self.clients)[selected_client_indices]
+
+    def save_model_weights(self, path: str):
+        model = self._create_model_with_updated_weights()
+        model.save_weights(str(path), overwrite=True)
+        fed_learn.get_rid_of_the_models(model)
+
+    def load_model_weights(self, path: str, by_name: bool = False):
+        model = self._create_model_with_updated_weights()
+        model.load_weights(str(path), by_name=by_name)
+        self.global_model_weights = model.get_weights()
+        fed_learn.get_rid_of_the_models(model)

@@ -7,6 +7,11 @@ import fed_learn
 
 
 def get_rid_of_the_models(model=None):
+    """
+    This function clears the TF session from the model.
+    This is needed as TF/Keras models are not automatically cleared, and the memory will be overloaded
+    """
+
     K.clear_session()
     if model is not None:
         del model
