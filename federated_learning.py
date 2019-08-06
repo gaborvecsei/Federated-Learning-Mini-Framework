@@ -25,6 +25,11 @@ def model_fn():
 
 weight_summarizer = fed_learn.FedAvg()
 server = fed_learn.Server(model_fn, weight_summarizer, args.clients, args.fraction, args.debug)
+
+weight_path = args.weights_file
+if weight_path is not None:
+    server.load_model_weights(weight_path)
+
 server.update_client_train_params(client_train_params)
 server.create_clients()
 server.send_train_data()

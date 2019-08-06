@@ -7,6 +7,7 @@ def get_args():
     parser.add_argument("-n", "--name", help="Name of the experiment", type=str, required=True)
     parser.add_argument("-oe", "--overwrite-experiment", help="Overwrite existing experiment", action="store_true",
                         required=False)
+    parser.add_argument("-w", "--weights-file", help="Weights file path to load", type=str, required=False)
     parser.add_argument("-e", "--global-epochs", help="Number of global (server) epochs", type=int, default=1000,
                         required=False)
     parser.add_argument("-c", "--clients", help="Number of clients", type=int, default=100, required=False)
