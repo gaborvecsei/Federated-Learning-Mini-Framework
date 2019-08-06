@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import numpy as np
 
@@ -6,10 +7,13 @@ import fed_learn
 
 args = fed_learn.get_args()
 
-nb_clients = args.clients
-client_fraction = args.fraction
-nb_global_epochs = args.global_epochs
-debug = args.debug
+EXPERIMENT_FOLDER_PATH = Path(__file__).resolve().parent / "experiments" / args.name
+EXPERIMENT_FOLDER_PATH.mkdir(parents=True, exist_ok=args.overwrite_experiment)
+
+args_json_path = EXPERIMENT_FOLDER_PATH / "args.json"
+fed_learn.save_args_as_json(args, EXPERIMENT_FOLDER_PATH / args_json_path)
+
+train_hist_path = EXPERIMENT_FOLDER_PATH / "fed_learn_global_test_results.json"
 
 client_train_params = {"epochs": args.client_epochs, "batch_size": args.batch_size}
 
@@ -19,12 +23,12 @@ def model_fn():
 
 
 weight_summarizer = fed_learn.FedAvg()
-server = fed_learn.Server(model_fn, weight_summarizer, nb_clients, client_fraction, debug)
+server = fed_learn.Server(model_fn, weight_summarizer, args.clients, args.fraction, args.debug)
 server.update_client_train_params(client_train_params)
 server.create_clients()
 server.send_train_data()
 
-for epoch in range(nb_global_epochs):
+for epoch in range(args.global_epochs):
     print("Global Epoch {0} is starting".format(epoch))
     server.init_for_new_epoch()
     selected_clients = server.select_clients()
@@ -51,7 +55,7 @@ for epoch in range(nb_global_epochs):
     for metric_name, value in global_test_results.items():
         print("{0}: {1}".format(metric_name, value))
 
-    with open("fed_learn_global_test_results.json", 'w') as f:
+    with open(str(train_hist_path), 'w') as f:
         json.dump(server.global_test_metrics_dict, f)
 
     print("_" * 30)
