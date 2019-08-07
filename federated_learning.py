@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-
+from swiss_army_tensorboard import tfboard_loggers
 import numpy as np
 
 import fed_learn
@@ -16,9 +16,13 @@ EXPERIMENT_FOLDER_PATH.mkdir(parents=True, exist_ok=args.overwrite_experiment)
 
 args_json_path = EXPERIMENT_FOLDER_PATH / "args.json"
 fed_learn.save_args_as_json(args, EXPERIMENT_FOLDER_PATH / args_json_path)
+tfboard_loggers.TFBoardTextLogger(EXPERIMENT_FOLDER_PATH).log_markdown("args", "```\n{0}\n```".format(
+    json.dumps(args.__dict__, indent=4, sort_keys=True)), -1)
 
 train_hist_path = EXPERIMENT_FOLDER_PATH / "fed_learn_global_test_results.json"
 global_weight_path = EXPERIMENT_FOLDER_PATH / "global_weights.h5"
+
+tf_scalar_logger = tfboard_loggers.TFBoardScalarLogger(EXPERIMENT_FOLDER_PATH)
 
 client_train_params = {"epochs": args.client_epochs, "batch_size": args.batch_size}
 
@@ -58,12 +62,17 @@ for epoch in range(args.global_epochs):
 
     epoch_mean_loss = np.mean(server.epoch_losses)
     server.global_train_losses.append(epoch_mean_loss)
+    tf_scalar_logger.log_scalar("train_loss/client_mean_loss", server.global_train_losses[-1], epoch)
     print("Loss (client mean): {0}".format(server.global_train_losses[-1]))
 
     global_test_results = server.test_global_model()
     print("--- Global test ---")
-    for metric_name, value in global_test_results.items():
-        print("{0}: {1}".format(metric_name, value))
+    test_loss = global_test_results["loss"]
+    test_acc = global_test_results["acc"]
+    print("{0}: {1}".format("Loss", test_loss))
+    print("{0}: {1}".format("Accuracy", test_acc))
+    tf_scalar_logger.log_scalar("test_loss/global_loss", test_loss, epoch)
+    tf_scalar_logger.log_scalar("test_acc/global_acc", test_acc, epoch)
 
     with open(str(train_hist_path), 'w') as f:
         json.dump(server.global_test_metrics_dict, f)
