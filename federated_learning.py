@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 from swiss_army_tensorboard import tfboard_loggers
 import numpy as np
 
@@ -12,7 +13,9 @@ os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 EXPERIMENT_FOLDER_PATH = Path(__file__).resolve().parent / "experiments" / args.name
-EXPERIMENT_FOLDER_PATH.mkdir(parents=True, exist_ok=args.overwrite_experiment)
+if args.overwrite_experiment and EXPERIMENT_FOLDER_PATH.is_dir():
+    shutil.rmtree(str(EXPERIMENT_FOLDER_PATH))
+EXPERIMENT_FOLDER_PATH.mkdir(parents=True, exist_ok=False)
 
 args_json_path = EXPERIMENT_FOLDER_PATH / "args.json"
 fed_learn.save_args_as_json(args, EXPERIMENT_FOLDER_PATH / args_json_path)
