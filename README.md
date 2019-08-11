@@ -18,7 +18,7 @@ Training with a shallow version of VGG16 on Cifar10 with IID data where we had 1
 
 A "single model" training (1 client with all the data) is also shown (`red`) on the graph. Batch size was `256` and the learning rate was: `0.05`.
 
-<img src="art/cifar_10_experiment.png" width="400">
+<img src="art/cifar_10_experiment.png" width="600">
 
 (The Tensorboard logs are (for each experiment) included in the release, so you can easily visualize them.)
 
