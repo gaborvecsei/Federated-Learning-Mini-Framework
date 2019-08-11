@@ -11,14 +11,16 @@ scenario the clients are edge devices and the training is running in parallel.
 
 In this setup the client trainings are running sequentially and you can use only your CPU or just 1 GPU.
 
-## Cifar10 experiments
+## Cifar10 - "Shallow" VGG16
 
-Training on Cifar10 with IID data where we had 100 clients and for each round (global epoch) we used only
-10% of them (selected randomly). Every client fitted 1 epoch on "their part" of the data with the batch size of 64.
+Training with a shallow version of VGG16 on Cifar10 with IID data where we had 100 clients and for each round (global epoch) we used only
+10% of them (selected randomly at each communication round). Every client fitted 1 epoch on "their part" of the data with the batch size of `[blue: 8, orange: 64, gray: 256]` and with learning rate of `0.1`.
 
-`python fl.py -e 200 -c 100 -f 0.1 -lr 0.2 -b 64 -ce 1`
+A "single model" training (1 client with all the data) is also shown (`red`) on the graph. Batch size was `256` and the learning rate was: `0.05`.
 
-<img src="art/fl_3_clients_accuracy.png" width="350">
+<img src="art/cifar_10_experiment.png" width="400">
+
+(The Tensorboard logs are (for each experiment) included in the release, so you can easily visualize them.)
 
 ## About
 
