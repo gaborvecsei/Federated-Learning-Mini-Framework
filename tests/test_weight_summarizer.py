@@ -31,3 +31,21 @@ class TestFedAvgAlgorithm(unittest.TestCase):
 
     def test_basic_averaging_max(self):
         self.assertAlmostEqual(np.max(self.avg_weights), 2.0)
+
+
+class TestBitSummarizer(unittest.TestCase):
+    def setUp(self) -> None:
+        self.weight_summarizer = fed_learn.BitSummarizer()
+        self.global_weights = [np.zeros((10, 10), dtype=np.float32)]
+
+        client_weights = np.zeros_like(self.global_weights[0])
+        client_weights[0][0] = 1.1
+        client_weights[4][4] = 9.10
+        client_weights[2][2] = -1.5
+
+        self.client_weight_list = [[client_weights]]
+
+        self.avg_weights = self.weight_summarizer.process(self.client_weight_list)
+
+        # TODO: test cases... :D
+
