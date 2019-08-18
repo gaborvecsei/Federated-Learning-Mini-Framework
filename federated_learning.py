@@ -1,9 +1,11 @@
 import json
 import os
-from pathlib import Path
 import shutil
-from swiss_army_tensorboard import tfboard_loggers
+from pathlib import Path
+
 import numpy as np
+from keras import datasets
+from swiss_army_tensorboard import tfboard_loggers
 
 import fed_learn
 
@@ -35,7 +37,10 @@ def model_fn():
 
 
 weight_summarizer = fed_learn.FedAvg()
-server = fed_learn.Server(model_fn, weight_summarizer, args.clients, args.fraction, args.debug)
+server = fed_learn.Server(model_fn,
+                          weight_summarizer,
+                          args.clients,
+                          args.fraction)
 
 weight_path = args.weights_file
 if weight_path is not None:
@@ -43,7 +48,11 @@ if weight_path is not None:
 
 server.update_client_train_params(client_train_params)
 server.create_clients()
-server.send_train_data()
+
+(x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
+data_handler = fed_learn.DataHandler(x_train, y_train, x_test, y_test, fed_learn.CifarProcessor(), args.debug)
+data_handler.assign_data_to_clients(server.clients, args.data_sampling_technique)
+x_test, y_test = data_handler.preprocess(data_handler.x_test, data_handler.y_test)
 
 for epoch in range(args.global_epochs):
     print("Global Epoch {0} is starting".format(epoch))
@@ -68,7 +77,7 @@ for epoch in range(args.global_epochs):
     tf_scalar_logger.log_scalar("train_loss/client_mean_loss", server.global_train_losses[-1], epoch)
     print("Loss (client mean): {0}".format(server.global_train_losses[-1]))
 
-    global_test_results = server.test_global_model()
+    global_test_results = server.test_global_model(x_test, y_test)
     print("--- Global test ---")
     test_loss = global_test_results["loss"]
     test_acc = global_test_results["acc"]

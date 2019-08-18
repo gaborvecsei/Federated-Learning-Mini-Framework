@@ -1,7 +1,7 @@
 from typing import Callable
 
 import numpy as np
-from keras import datasets, utils, models
+from keras import models
 
 import fed_learn
 from fed_learn.weight_summarizer import WeightSummarizer
@@ -11,8 +11,7 @@ class Server:
     def __init__(self, model_fn: Callable,
                  weight_summarizer: WeightSummarizer,
                  nb_clients: int = 100,
-                 client_fraction: float = 0.2,
-                 only_debugging: bool = True):
+                 client_fraction: float = 0.2):
         self.nb_clients = nb_clients
         self.client_fraction = client_fraction
         self.weight_summarizer = weight_summarizer
@@ -27,30 +26,6 @@ class Server:
         self.global_train_losses = []
         self.epoch_losses = []
 
-        (x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
-
-        if only_debugging:
-            # TODO: remove me
-            x_train = x_train[:100]
-            y_train = y_train[:100]
-            x_test = x_test[:100]
-            y_test = y_test[:100]
-
-        # TODO: separate preprocessor for the data transformations
-        y_train = utils.to_categorical(y_train, len(np.unique(y_train)))
-        x_train = x_train.astype(np.float32)
-        x_train /= 255.0
-
-        y_test = utils.to_categorical(y_test, len(np.unique(y_test)))
-        x_test = x_test.astype(np.float32)
-        x_test /= 255.0
-
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_test = x_test
-        self.y_test = y_test
-
-        self.client_data_indices = None
         self.clients = []
         self.client_model_weights = []
 
@@ -60,28 +35,10 @@ class Server:
                                          "verbose": 1,
                                          "shuffle": True}
 
-    def _generate_data_indices(self):
-        self.client_data_indices = fed_learn.iid_data_indices(self.nb_clients, len(self.x_train))
-
-    def _get_data_indices_for_client(self, client: int):
-        return self.client_data_indices[client]
-
-    def _send_train_data_to_client(self, client):
-        relevant_data_point_indices = self._get_data_indices_for_client(client.id)
-        x = self.x_train[relevant_data_point_indices]
-        y = self.y_train[relevant_data_point_indices]
-        client.receive_data(x, y)
-        return x, y
-
     def _create_model_with_updated_weights(self) -> models.Model:
         model = self.model_fn()
         fed_learn.models.set_model_weights(model, self.global_model_weights)
         return model
-
-    def send_train_data(self):
-        self._generate_data_indices()
-        for c in self.clients:
-            self._send_train_data_to_client(c)
 
     def send_model(self, client):
         client.receive_and_init_model(self.model_fn, self.global_model_weights)
@@ -113,9 +70,9 @@ class Server:
     def update_client_train_params(self, param_dict: dict):
         self.client_train_params_dict.update(param_dict)
 
-    def test_global_model(self):
+    def test_global_model(self, x_test: np.ndarray, y_test: np.ndarray):
         model = self._create_model_with_updated_weights()
-        results = model.evaluate(self.x_test, self.y_test, batch_size=32, verbose=1)
+        results = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
 
         results_dict = dict(zip(model.metrics_names, results))
         for metric_name, value in results_dict.items():
