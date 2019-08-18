@@ -9,7 +9,7 @@ class WeightSummarizer:
 
     def process(self,
                 client_weight_list: List[List[np.ndarray]],
-                global_weights: Optional[List[np.ndarray]]) -> List[np.ndarray]:
+                global_weights: Optional[List[np.ndarray]] = None) -> List[np.ndarray]:
         raise NotImplementedError()
 
 
