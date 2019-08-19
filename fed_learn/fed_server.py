@@ -61,7 +61,7 @@ class Server:
             self.clients.append(client)
 
     def summarize_weights(self):
-        new_weights = self.weight_summarizer.process(self.client_model_weights)
+        new_weights = self.weight_summarizer.process(self.client_model_weights, self.global_model_weights)
         self.global_model_weights = new_weights
 
     def get_client_train_param_dict(self):

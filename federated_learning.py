@@ -36,7 +36,13 @@ def model_fn():
     return fed_learn.create_model((32, 32, 3), 10, init_with_imagenet=False, learning_rate=args.learning_rate)
 
 
-weight_summarizer = fed_learn.FedAvg()
+if args.summarizer == "1bit":
+    weight_summarizer = fed_learn.BitSummarizer()
+elif args.summarizer == "2bit":
+    weight_summarizer = fed_learn.TwoBitSummarizer()
+else:
+    weight_summarizer = fed_learn.FedAvg()
+
 server = fed_learn.Server(model_fn,
                           weight_summarizer,
                           args.clients,
