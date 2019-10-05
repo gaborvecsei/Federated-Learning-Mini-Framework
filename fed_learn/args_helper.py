@@ -26,6 +26,13 @@ def get_args():
     return args
 
 
+def args_as_json(args):
+    json_str = json.dumps(args.__dict__, sort_keys=True, indent=4)
+    return json_str
+
+
 def save_args_as_json(args, path):
+    json_str = args_as_json(args)
+
     with open(str(path), "w") as f:
-        json.dump(args.__dict__, f, sort_keys=True, indent=4)
+        f.write(json_str)
